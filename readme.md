@@ -7,6 +7,6 @@
 ---
 
 <div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=TÊN_USER_CỦA_BẠN&show_icons=true&theme=tokyonight" width="48%" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=TÊN_USER_CỦA_BẠN&layout=compact&theme=tokyonight" width="48%" />
+  <img src="https://github-readme-stats.vercel.app/api?username=Grant-Tung&show_icons=true&theme=tokyonight" width="48%" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Grant-Tung&layout=compact&theme=tokyonight" width="48%" />
 </div>
