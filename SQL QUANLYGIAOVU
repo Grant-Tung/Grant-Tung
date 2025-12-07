@@ -1,0 +1,514 @@
+-- TẠO VÀ SỬ DỤNG DATABASE
+USE QUANLYGIAOVU;
+GO
+
+SET DATEFORMAT DMY;
+GO
+
+-- XÓA BẢNG CŨ (NẾU CÓ) THEO THỨ TỰ ĐẢO NGƯỢC KHÓA NGOẠI
+IF OBJECT_ID('KETQUATHI') IS NOT NULL DROP TABLE KETQUATHI;
+IF OBJECT_ID('GIANGDAY') IS NOT NULL DROP TABLE GIANGDAY;
+IF OBJECT_ID('DIEUKIEN') IS NOT NULL DROP TABLE DIEUKIEN;
+IF OBJECT_ID('HOCVIEN') IS NOT NULL DROP TABLE HOCVIEN;
+IF OBJECT_ID('LOP') IS NOT NULL DROP TABLE LOP;
+IF OBJECT_ID('MONHOC') IS NOT NULL DROP TABLE MONHOC;
+IF OBJECT_ID('GIAOVIEN') IS NOT NULL DROP TABLE GIAOVIEN;
+IF OBJECT_ID('KHOA') IS NOT NULL DROP TABLE KHOA;
+GO
+
+-- TẠO BẢNG KHOA
+CREATE TABLE KHOA (
+    MAKHOA VARCHAR(4) PRIMARY KEY,
+    TENKHOA NVARCHAR(40) NOT NULL,
+    NGTLAP SMALLDATETIME,
+    TRGKHOA CHAR(4)
+);
+GO
+
+-- TẠO BẢNG GIAOVIEN
+CREATE TABLE GIAOVIEN (
+    MAGV CHAR(4) PRIMARY KEY,
+    HOTEN NVARCHAR(40) NOT NULL,
+    HOCVI NVARCHAR(10),
+    HOCHAM NVARCHAR(10),
+    GIOITINH NVARCHAR(3) CHECK (GIOITINH IN ('Nam', 'Nu')),
+    NGSINH SMALLDATETIME,
+    NGVL SMALLDATETIME,
+    HESO NUMERIC(4,2),
+    MUCLUONG MONEY,
+    MAKHOA VARCHAR(4),
+    CONSTRAINT FK_GV_KHOA FOREIGN KEY (MAKHOA) REFERENCES KHOA(MAKHOA)
+);
+GO
+
+-- TẠO BẢNG MONHOC
+CREATE TABLE MONHOC (
+    MAMH CHAR(4) PRIMARY KEY,
+    TENMH NVARCHAR(40) NOT NULL,
+    TCLT INT,
+    TCTH INT,
+    MAKHOA VARCHAR(4),
+    CONSTRAINT FK_MH_KHOA FOREIGN KEY (MAKHOA) REFERENCES KHOA(MAKHOA)
+);
+GO
+
+-- TẠO BẢNG LOP
+CREATE TABLE LOP (
+    MALOP CHAR(3) PRIMARY KEY,
+    TENLOP NVARCHAR(30) NOT NULL,
+    TRGLOP CHAR(6),
+    SISO INT,
+    MAGVCN CHAR(4),
+    CONSTRAINT FK_LOP_GVCN FOREIGN KEY (MAGVCN) REFERENCES GIAOVIEN(MAGV)
+);
+GO
+
+-- TẠO BẢNG HOCVIEN
+CREATE TABLE HOCVIEN (
+    MAHV CHAR(6) PRIMARY KEY,
+    HO NVARCHAR(20) NOT NULL,
+    TEN NVARCHAR(10) NOT NULL,
+    NGSINH SMALLDATETIME,
+    GIOITINH NVARCHAR(3) CHECK (GIOITINH IN ('Nam', 'Nu')),
+    NOISINH NVARCHAR(30),
+    MALOP CHAR(3),
+    DIEMTB NUMERIC(4,2),
+    XEPLOAI NVARCHAR(10),
+    GHICHU NVARCHAR(100),
+    CONSTRAINT FK_HV_LOP FOREIGN KEY (MALOP) REFERENCES LOP(MALOP)
+);
+GO
+
+-- TẠO BẢNG DIEUKIEN
+CREATE TABLE DIEUKIEN (
+    MAMH CHAR(4),
+    MAMH_TRUOC CHAR(4),
+    CONSTRAINT PK_DIEUKIEN PRIMARY KEY (MAMH, MAMH_TRUOC),
+    CONSTRAINT FK_DK_MH FOREIGN KEY (MAMH) REFERENCES MONHOC(MAMH),
+    CONSTRAINT FK_DK_MHTRUOC FOREIGN KEY (MAMH_TRUOC) REFERENCES MONHOC(MAMH)
+);
+GO
+
+-- TẠO BẢNG GIANGDAY
+CREATE TABLE GIANGDAY (
+    MALOP CHAR(3),
+    MAMH CHAR(4),
+    MAGV CHAR(4),
+    HOCKY INT,
+    NAM INT,
+    TUNGAY SMALLDATETIME,
+    DENNGAY SMALLDATETIME,
+    CONSTRAINT PK_GIANGDAY PRIMARY KEY (MALOP, MAMH, MAGV),
+    CONSTRAINT FK_GD_LOP FOREIGN KEY (MALOP) REFERENCES LOP(MALOP),
+    CONSTRAINT FK_GD_MH FOREIGN KEY (MAMH) REFERENCES MONHOC(MAMH),
+    CONSTRAINT FK_GD_GV FOREIGN KEY (MAGV) REFERENCES GIAOVIEN(MAGV)
+);
+GO
+
+-- TẠO BẢNG KETQUATHI
+CREATE TABLE KETQUATHI (
+    MAHV CHAR(6),
+    MAMH CHAR(4),
+    LANTHI INT,
+    NGTHI SMALLDATETIME,
+    DIEM NUMERIC(4,2),
+    KQUA NVARCHAR(10) CHECK (KQUA IN ('Dat', 'Khong Dat')),
+    CONSTRAINT PK_KETQUATHI PRIMARY KEY (MAHV, MAMH, LANTHI),
+    CONSTRAINT FK_KQ_HV FOREIGN KEY (MAHV) REFERENCES HOCVIEN(MAHV),
+    CONSTRAINT FK_KQ_MH FOREIGN KEY (MAMH) REFERENCES MONHOC(MAMH)
+);
+GO
+
+-- THÊM RÀNG BUỘC KHÓA NGOẠI SAU KHI TẠO BẢNG GIAOVIEN VÀ HOCVIEN
+ALTER TABLE KHOA ADD CONSTRAINT FK_KHOA_TRGKHOA FOREIGN KEY (TRGKHOA) REFERENCES GIAOVIEN(MAGV);
+ALTER TABLE LOP ADD CONSTRAINT FK_LOP_TRGLOP FOREIGN KEY (TRGLOP) REFERENCES HOCVIEN(MAHV);
+GO
+
+-- CHÈN DỮ LIỆU
+-- 1. Nhập liệu KHOA (tạm để TRGKHOA NULL)
+INSERT INTO KHOA (MAKHOA, TENKHOA, NGTLAP, TRGKHOA) VALUES 
+('KHMT', N'Khoa học máy tính', '7/6/2005', NULL),
+('HTTT', N'Hệ thống thông tin', '7/6/2005', NULL),
+('CNPM', N'Công nghệ phần mềm', '7/6/2005', NULL),
+('MTT', N'Mạng và truyền thông', '20/10/2005', NULL),
+('KTMT', N'Kỹ thuật máy tính', '20/12/2005', NULL);
+GO
+
+-- 2. Nhập liệu LOP (tạm để TRGLOP và MAGVCN NULL)
+INSERT INTO LOP (MALOP, TENLOP, TRGLOP, SISO, MAGVCN) VALUES 
+('K11', N'Lớp 1 khóa 1', NULL, 11, NULL),
+('K12', N'Lớp 2 khóa 1', NULL, 12, NULL),
+('K13', N'Lớp 3 khóa 1', NULL, 12, NULL);
+GO
+
+-- 3. Nhập liệu MONHOC
+INSERT INTO MONHOC (MAMH, TENMH, TCLT, TCTH, MAKHOA) VALUES 
+('THDC', N'Tin học đại cương', 4, 1, 'KHMT'),
+('CTRR', N'Cấu trúc rời rạc', 5, 0, 'KHMT'),
+('CSDL', N'Cơ sở dữ liệu', 3, 1, 'HTTT'),
+('CTDLGT', N'Cấu trúc dữ liệu và giải thuật', 3, 1, 'KHMT'),
+('PTTKTT', N'Phân tích thiết kế thuật toán', 3, 0, 'KHMT'),
+('DHMT', N'Đồ họa máy tính', 3, 1, 'KHMT'),
+('KTMT', N'Kiến trúc máy tính', 3, 0, 'KTMT'),
+('TKCSDL', N'Thiết kế cơ sở dữ liệu', 3, 1, 'HTTT'),
+('PTTKHTTT', N'Phân tích thiết kế hệ thống thông tin', 4, 1, 'HTTT'),
+('HDH', N'Hệ điều hành', 4, 0, 'KTMT'),
+('NMCNPM', N'Nhập môn công nghệ phần mềm', 3, 0, 'CNPM'),
+('LTCFW', N'Lập trình C for win', 3, 1, 'CNPM'),
+('LTHDT', N'Lập trình hướng đối tượng', 3, 1, 'CNPM');
+GO
+
+-- 4. Nhập liệu GIAOVIEN
+INSERT INTO GIAOVIEN (MAGV, HOTEN, HOCVI, HOCHAM, GIOITINH, NGSINH, NGVL, HESO, MUCLUONG, MAKHOA) VALUES 
+('GV01', N'Hồ Thanh Sơn', 'PTS', 'GS', 'Nam', '2/5/1950', '11/1/2004', 5.00, 2250000, 'KHMT'),
+('GV02', N'Trần Tấm Thành', 'TS', 'PGS', 'Nam', '17/12/1965', '20/4/2004', 4.50, 2025000, 'HTTT'),
+('GV03', N'Đỗ Nghiêm Phụng', 'TS', 'GS', N'Nữ', '1/8/1950', '23/9/2004', 4.00, 1800000, 'CNPM'),
+('GV04', N'Trần Nam Sơn', 'TS', 'PGS', 'Nam', '22/2/1961', '12/1/2005', 4.50, 2025000, 'KTMT'),
+('GV05', N'Mai Thanh Danh', 'ThS', 'GV', 'Nam', '12/3/1958', '12/1/2005', 3.00, 1350000, 'HTTT'),
+('GV06', N'Trần Doãn Hùng', 'TS', 'GV', 'Nam', '11/3/1953', '12/1/2005', 4.50, 2025000, 'KHMT'),
+('GV07', N'Nguyễn Minh Tiến', 'ThS', 'GV', 'Nam', '23/11/1971', '1/3/2005', 4.00, 1800000, 'KHMT'),
+('GV08', N'Lê Thị Trần', 'KS', NULL, N'Nữ', '26/3/1974', '1/3/2005', 1.69, 760500, 'KHMT'),
+('GV09', N'Nguyễn Tố Lan', 'ThS', 'GV', N'Nữ', '31/12/1966', '1/3/2005', 4.00, 1800000, 'HTTT'),
+('GV10', N'Lê Trần Anh Loan', 'KS', NULL, N'Nữ', '17/7/1972', '1/3/2005', 1.86, 837000, 'CNPM'),
+('GV11', N'Hồ Thanh Tùng', 'CN', 'GV', 'Nam', '12/1/1980', '15/5/2005', 2.67, 1201500, 'MTT'),
+('GV12', N'Trần Văn Anh', 'CN', NULL, N'Nữ', '29/3/1981', '15/5/2005', 1.69, 760500, 'CNPM'),
+('GV13', N'Nguyễn Linh Đan', 'CN', NULL, N'Nữ', '23/5/1980', '15/5/2005', 1.69, 760500, 'KTMT'),
+('GV14', N'Trương Minh Châu', 'ThS', 'GV', N'Nữ', '30/11/1976', '15/5/2005', 3.00, 1350000, 'MTT'),
+('GV15', N'Lê Hà Thanh', 'ThS', 'GV', 'Nam', '4/5/1978', '15/5/2005', 3.00, 1350000, 'KHMT');
+GO
+
+-- 5. Nhập liệu HOCVIEN
+INSERT INTO HOCVIEN (MAHV, HO, TEN, NGSINH, GIOITINH, NOISINH, MALOP) VALUES 
+('K1101', N'Nguyễn Văn', 'A', '27/1/1986', 'Nam', N'TpHCM', 'K11'),
+('K1102', N'Trần Ngọc', 'Han', '14/3/1986', N'Nữ', N'Kiên Giang', 'K11'),
+('K1103', N'Hà Duy', 'Lap', '18/4/1986', 'Nam', N'Nghệ An', 'K11'),
+('K1104', N'Trần Ngọc', 'Linh', '30/3/1986', N'Nữ', N'Tây Ninh', 'K11'),
+('K1105', N'Trần Minh', 'Long', '27/2/1986', 'Nam', N'TpHCM', 'K11'),
+('K1106', N'Lê Nhật', 'Minh', '24/1/1986', 'Nam', N'TpHCM', 'K11'),
+('K1107', N'Nguyễn Như', 'Nhut', '27/1/1986', 'Nam', N'Hà Nội', 'K11'),
+('K1108', N'Nguyễn Mạnh', 'Tam', '27/2/1986', 'Nam', N'Kiên Giang', 'K11'),
+('K1109', N'Phan Thị Thanh', 'Tam', '27/1/1986', N'Nữ', N'Vĩnh Long', 'K11'),
+('K1110', N'Lê Hoài', 'Thuong', '5/2/1986', N'Nữ', N'Cần Thơ', 'K11'),
+('K1111', N'Lê Hà', 'Vinh', '25/12/1986', 'Nam', N'Vĩnh Long', 'K11'),
+('K1201', N'Nguyễn Văn', 'B', '11/2/1986', 'Nam', N'TpHCM', 'K12'),
+('K1202', N'Nguyễn Thị Kim', 'Duyen', '18/1/1986', N'Nữ', N'TpHCM', 'K12'),
+('K1203', N'Trần Thị Kim', 'Duyen', '17/9/1986', N'Nữ', N'TpHCM', 'K12'),
+('K1204', N'Trương Mỹ', 'Hanh', '19/5/1986', N'Nữ', N'Đồng Nai', 'K12'),
+('K1205', N'Nguyễn Thanh', 'Nam', '17/4/1986', 'Nam', N'TpHCM', 'K12'),
+('K1206', N'Nguyễn Thị Trúc', 'Thanh', '4/3/1986', N'Nữ', N'Kiên Giang', 'K12'),
+('K1207', N'Trần Thị Bích', 'Thuy', '8/2/1986', N'Nữ', N'Nghệ An', 'K12'),
+('K1208', N'Huỳnh Thị Kim', 'Trieu', '8/4/1986', N'Nữ', N'Tây Ninh', 'K12'),
+('K1209', N'Phạm Thanh', 'Trieu', '23/2/1986', 'Nam', N'TpHCM', 'K12'),
+('K1210', N'Ngô Thanh', 'Tuan', '14/2/1986', 'Nam', N'TpHCM', 'K12'),
+('K1211', N'Đỗ Thị', 'Xuan', '9/3/1986', N'Nữ', N'Hà Nội', 'K12'),
+('K1212', N'Lê Thị Phi', 'Yen', '12/3/1986', N'Nữ', N'TpHCM', 'K12'),
+('K1301', N'Nguyễn Thị Kim', 'Cuc', '9/6/1986', N'Nữ', N'Kiên Giang', 'K13'),
+('K1302', N'Trương Thị Mỹ', 'Hien', '18/3/1986', N'Nữ', N'Nghệ An', 'K13'),
+('K1303', N'Lê Đức', 'Hien', '21/3/1986', 'Nam', N'Tây Ninh', 'K13'),
+('K1304', N'Lê Quang', 'Hien', '18/4/1986', 'Nam', N'TpHCM', 'K13'),
+('K1305', N'Lê Thị', 'Huong', '27/3/1986', N'Nữ', N'TpHCM', 'K13'),
+('K1306', N'Nguyễn Thái', 'Huu', '30/3/1986', 'Nam', N'Hà Nội', 'K13'),
+('K1307', N'Trần Minh', 'Man', '28/5/1986', 'Nam', N'TpHCM', 'K13'),
+('K1308', N'Nguyễn Hiếu', 'Nghia', '8/4/1986', 'Nam', N'Kiên Giang', 'K13'),
+('K1309', N'Nguyễn Trung', 'Nghia', '18/1/1987', 'Nam', N'Nghệ An', 'K13'),
+('K1310', N'Trần Thị Hồng', 'Tham', '22/4/1986', N'Nữ', N'Tây Ninh', 'K13'),
+('K1311', N'Trần Minh', 'Thuc', '4/4/1986', 'Nam', N'TpHCM', 'K13'),
+('K1312', N'Nguyễn Thị Kim', 'Yen', '7/9/1986', N'Nữ', N'TpHCM', 'K13');
+GO
+
+-- 6. Cập nhật TRGKHOA và TRGLOP/GVCN
+UPDATE KHOA SET TRGKHOA = 'GV01' WHERE MAKHOA = 'KHMT';
+UPDATE KHOA SET TRGKHOA = 'GV02' WHERE MAKHOA = 'HTTT';
+UPDATE KHOA SET TRGKHOA = 'GV04' WHERE MAKHOA = 'CNPM';
+UPDATE KHOA SET TRGKHOA = 'GV03' WHERE MAKHOA = 'MTT';
+-- Khoa KTMT để NULL trưởng khoa
+
+UPDATE LOP SET TRGLOP = 'K1108', MAGVCN = 'GV07' WHERE MALOP = 'K11';
+UPDATE LOP SET TRGLOP = 'K1205', MAGVCN = 'GV09' WHERE MALOP = 'K12';
+UPDATE LOP SET TRGLOP = 'K1305', MAGVCN = 'GV14' WHERE MALOP = 'K13';
+GO
+
+-- 7. Nhập liệu DIEUKIEN
+INSERT INTO DIEUKIEN (MAMH, MAMH_TRUOC) VALUES 
+('CSDL', 'CTRR'),
+('CSDL', 'CTDLGT'),
+('CTDLGT', 'THDC'),
+('PTTKTT', 'THDC'),
+('PTTKTT', 'CTDLGT'),
+('DHMT', 'THDC'),
+('LTHDT', 'THDC'),
+('PTTKHTTT', 'CSDL');
+GO
+
+-- 8. Nhập liệu GIANGDAY
+INSERT INTO GIANGDAY (MALOP, MAMH, MAGV, HOCKY, NAM, TUNGAY, DENNGAY) VALUES 
+('K11', 'THDC', 'GV07', 1, 2006, '2/1/2006', '12/5/2006'),
+('K12', 'THDC', 'GV06', 1, 2006, '2/1/2006', '12/5/2006'),
+('K13', 'THDC', 'GV15', 1, 2006, '2/1/2006', '12/5/2006'),
+('K11', 'CTRR', 'GV02', 1, 2006, '9/1/2006', '17/5/2006'),
+('K12', 'CTRR', 'GV02', 1, 2006, '9/1/2006', '17/5/2006'),
+('K13', 'CTRR', 'GV08', 1, 2006, '9/1/2006', '17/5/2006'),
+('K11', 'CSDL', 'GV05', 2, 2006, '1/6/2006', '15/7/2006'),
+('K12', 'CSDL', 'GV09', 2, 2006, '1/6/2006', '15/7/2006'),
+('K13', 'CTDLGT', 'GV15', 2, 2006, '1/6/2006', '15/7/2006'),
+('K13', 'CSDL', 'GV05', 3, 2006, '1/8/2006', '15/12/2006'),
+('K13', 'DHMT', 'GV07', 3, 2006, '1/8/2006', '15/12/2006'),
+('K11', 'CTDLGT', 'GV15', 3, 2006, '1/8/2006', '15/12/2006'),
+('K12', 'CTDLGT', 'GV15', 3, 2006, '1/8/2006', '15/12/2006'),
+('K11', 'HDH', 'GV04', 1, 2007, '2/1/2007', '18/2/2007'),
+('K12', 'HDH', 'GV04', 1, 2007, '2/1/2007', '20/3/2007'),
+('K11', 'DHMT', 'GV07', 1, 2007, '18/2/2007', '20/3/2007');
+GO
+
+-- 9. Nhập liệu KETQUATHI
+INSERT INTO KETQUATHI (MAHV, MAMH, LANTHI, NGTHI, DIEM, KQUA) VALUES 
+('K1101', 'CSDL', 1, '20/7/2006', 10.00, 'Dat'),
+('K1101', 'CTDLGT', 1, '28/12/2006', 9.00, 'Dat'),
+('K1101', 'THDC', 1, '20/5/2006', 9.00, 'Dat'),
+('K1101', 'CTRR', 1, '13/5/2006', 9.50, 'Dat'),
+('K1102', 'CSDL', 1, '20/7/2006', 4.00, 'Khong Dat'),
+('K1102', 'CSDL', 2, '27/7/2006', 4.25, 'Khong Dat'),
+('K1102', 'CSDL', 3, '10/8/2006', 4.50, 'Khong Dat'),
+('K1102', 'CTDLGT', 1, '28/12/2006', 4.50, 'Khong Dat'),
+('K1102', 'CTDLGT', 2, '5/1/2007', 4.00, 'Khong Dat'),
+('K1102', 'CTDLGT', 3, '15/1/2007', 6.00, 'Dat'),
+('K1102', 'THDC', 1, '20/5/2006', 5.00, 'Dat'),
+('K1102', 'CTRR', 1, '13/5/2006', 7.00, 'Dat'),
+('K1103', 'CSDL', 1, '20/7/2006', 3.50, 'Khong Dat'),
+('K1103', 'CSDL', 2, '27/7/2006', 8.25, 'Dat'),
+('K1103', 'CTDLGT', 1, '28/12/2006', 7.00, 'Dat'),
+('K1103', 'THDC', 1, '20/5/2006', 8.00, 'Dat'),
+('K1103', 'CTRR', 1, '13/5/2006', 6.50, 'Dat'),
+('K1104', 'CSDL', 1, '20/7/2006', 3.75, 'Khong Dat'),
+('K1104', 'CTDLGT', 1, '28/12/2006', 4.00, 'Khong Dat'),
+('K1104', 'THDC', 1, '20/5/2006', 4.00, 'Khong Dat'),
+('K1104', 'CTRR', 1, '13/5/2006', 4.00, 'Khong Dat'),
+('K1104', 'CTRR', 2, '20/5/2006', 3.50, 'Khong Dat'),
+('K1104', 'CTRR', 3, '30/6/2006', 4.00, 'Khong Dat'),
+('K1201', 'CSDL', 1, '20/7/2006', 6.00, 'Dat'),
+('K1201', 'CTDLGT', 1, '28/12/2006', 5.00, 'Dat'),
+('K1201', 'THDC', 1, '20/5/2006', 8.50, 'Dat'),
+('K1201', 'CTRR', 1, '13/5/2006', 9.00, 'Dat'),
+('K1202', 'CSDL', 1, '20/7/2006', 8.00, 'Dat'),
+('K1202', 'CTDLGT', 1, '28/12/2006', 4.00, 'Khong Dat'),
+('K1202', 'CTDLGT', 2, '5/1/2007', 5.00, 'Dat'),
+('K1202', 'THDC', 1, '20/5/2006', 4.00, 'Khong Dat'),
+('K1202', 'THDC', 2, '27/5/2006', 4.00, 'Khong Dat'),
+('K1202', 'CTRR', 1, '13/5/2006', 3.00, 'Khong Dat'),
+('K1202', 'CTRR', 2, '20/5/2006', 4.00, 'Khong Dat'),
+('K1202', 'CTRR', 3, '30/6/2006', 6.25, 'Dat'),
+('K1203', 'CSDL', 1, '20/7/2006', 9.25, 'Dat'),
+('K1203', 'CTDLGT', 1, '28/12/2006', 9.50, 'Dat'),
+('K1203', 'THDC', 1, '20/5/2006', 10.00, 'Dat'),
+('K1203', 'CTRR', 1, '13/5/2006', 10.00, 'Dat'),
+('K1204', 'CSDL', 1, '20/7/2006', 8.50, 'Dat'),
+('K1204', 'CTDLGT', 1, '28/12/2006', 6.75, 'Dat'),
+('K1204', 'THDC', 1, '20/5/2006', 4.00, 'Khong Dat'),
+('K1204', 'CTRR', 1, '13/5/2006', 6.00, 'Dat'),
+('K1301', 'CSDL', 1, '20/12/2006', 4.25, 'Khong Dat'),
+('K1301', 'CTDLGT', 1, '25/7/2006', 8.00, 'Dat'),
+('K1301', 'THDC', 1, '20/5/2006', 7.75, 'Dat'),
+('K1301', 'CTRR', 1, '13/5/2006', 8.00, 'Dat'),
+('K1302', 'CSDL', 1, '20/12/2006', 6.75, 'Dat'),
+('K1302', 'CTDLGT', 1, '25/7/2006', 5.00, 'Dat'),
+('K1302', 'THDC', 1, '20/5/2006', 8.00, 'Dat'),
+('K1302', 'CTRR', 1, '13/5/2006', 8.50, 'Dat'),
+('K1303', 'CSDL', 1, '20/12/2006', 4.00, 'Khong Dat'),
+('K1303', 'CTDLGT', 1, '25/7/2006', 4.50, 'Khong Dat'),
+('K1303', 'CTDLGT', 2, '7/8/2006', 4.00, 'Khong Dat'),
+('K1303', 'CTDLGT', 3, '15/8/2006', 4.25, 'Khong Dat'),
+('K1303', 'THDC', 1, '20/5/2006', 4.50, 'Khong Dat'),
+('K1303', 'CTRR', 1, '13/5/2006', 3.25, 'Khong Dat'),
+('K1303', 'CTRR', 2, '20/5/2006', 5.00, 'Dat'),
+('K1304', 'CSDL', 1, '20/12/2006', 7.75, 'Dat'),
+('K1304', 'CTDLGT', 1, '25/7/2006', 9.75, 'Dat'),
+('K1304', 'THDC', 1, '20/5/2006', 5.50, 'Dat'),
+('K1304', 'CTRR', 1, '13/5/2006', 5.00, 'Dat'),
+('K1305', 'CSDL', 1, '20/12/2006', 9.25, 'Dat'),
+('K1305', 'CTDLGT', 1, '25/7/2006', 10.00, 'Dat'),
+('K1305', 'THDC', 1, '20/5/2006', 8.00, 'Dat'),
+('K1305', 'CTRR', 1, '13/5/2006', 10.00, 'Dat');
+GO
+
+-- CÁC CÂU TRUY VẤN (DML)
+
+-- PHẦN II: CẬP NHẬT DỮ LIỆU
+-- Cau 1: Tăng hệ số lương thêm 0.2 cho giáo viên là trưởng khoa
+UPDATE GIAOVIEN
+SET HESO = HESO + 0.2
+WHERE MAGV IN (SELECT TRGKHOA FROM KHOA);
+GO
+
+-- Cau 2: Cập nhật điểm trung bình cho học viên
+UPDATE HOCVIEN
+SET DIEMTB = (
+    SELECT AVG(DIEM)
+    FROM KETQUATHI K
+    WHERE K.MAHV = HOCVIEN.MAHV
+    AND K.LANTHI = (
+        SELECT MAX(LANTHI) 
+        FROM KETQUATHI 
+        WHERE MAHV = K.MAHV AND MAMH = K.MAMH
+    )
+);
+GO
+
+-- Cau 3: Cập nhật ghi chú cấm thi
+UPDATE HOCVIEN
+SET GHICHU = N'Cấm thi'
+WHERE MAHV IN (
+    SELECT MAHV 
+    FROM KETQUATHI 
+    WHERE LANTHI = 3 AND DIEM < 5
+);
+GO
+
+-- Cau 4: Xếp loại học viên
+UPDATE HOCVIEN
+SET XEPLOAI = CASE 
+    WHEN DIEMTB >= 9 THEN N'Xuất sắc'
+    WHEN DIEMTB >= 8 THEN N'Giỏi'
+    WHEN DIEMTB >= 6.5 THEN N'Khá'
+    WHEN DIEMTB >= 5 THEN N'Trung bình'
+    ELSE N'Yếu'
+END;
+GO
+
+-- PHẦN III: TRUY VẤN DỮ LIỆU
+-- Cau 6: Môn học giáo viên Trần Tấm Thành dạy học kỳ 1 năm 2006
+SELECT DISTINCT M.TENMH
+FROM GIANGDAY GD
+JOIN GIAOVIEN GV ON GD.MAGV = GV.MAGV
+JOIN MONHOC M ON GD.MAMH = M.MAMH
+WHERE GV.HOTEN = N'Trần Tấm Thành' 
+    AND GD.HOCKY = 1 
+    AND GD.NAM = 2006;
+GO
+
+-- Cau 7: Môn học GVCN lớp K11 dạy học kỳ 1 năm 2006
+SELECT M.MAMH, M.TENMH
+FROM MONHOC M
+JOIN GIANGDAY GD ON M.MAMH = GD.MAMH
+WHERE GD.HOCKY = 1 AND GD.NAM = 2006
+    AND GD.MAGV = (SELECT MAGVCN FROM LOP WHERE MALOP = 'K11');
+GO
+
+-- Cau 8: Lớp trưởng của các lớp mà Nguyễn Tố Lan dạy môn CSDL
+SELECT HV.HO, HV.TEN
+FROM HOCVIEN HV
+JOIN LOP L ON HV.MAHV = L.TRGLOP
+JOIN GIANGDAY GD ON L.MALOP = GD.MALOP
+JOIN GIAOVIEN GV ON GD.MAGV = GV.MAGV
+JOIN MONHOC MH ON GD.MAMH = MH.MAMH
+WHERE GV.HOTEN = N'Nguyễn Tố Lan' AND MH.TENMH = N'Cơ sở dữ liệu';
+GO
+
+-- Cau 9: Môn học phải học trước môn CSDL
+SELECT M.MAMH, M.TENMH
+FROM MONHOC M
+JOIN DIEUKIEN DK ON M.MAMH = DK.MAMH_TRUOC
+JOIN MONHOC MH_CSDL ON DK.MAMH = MH_CSDL.MAMH
+WHERE MH_CSDL.TENMH = N'Cơ sở dữ liệu';
+GO
+
+-- Cau 10: Môn Cấu trúc rời rạc là tiên quyết của môn nào
+SELECT M.MAMH, M.TENMH
+FROM MONHOC M
+JOIN DIEUKIEN DK ON M.MAMH = DK.MAMH
+JOIN MONHOC MH_TRUOC ON DK.MAMH_TRUOC = MH_TRUOC.MAMH
+WHERE MH_TRUOC.TENMH = N'Cấu trúc rời rạc';
+GO
+
+-- Cau 11: Giáo viên dạy CTRR cho cả 2 lớp K11 và K12 HK1 năm 2006
+SELECT GV.HOTEN
+FROM GIAOVIEN GV
+WHERE GV.MAGV IN (
+    SELECT GD.MAGV 
+    FROM GIANGDAY GD 
+    WHERE GD.MAMH = 'CTRR' AND GD.MALOP = 'K11' 
+        AND GD.HOCKY = 1 AND GD.NAM = 2006
+)
+AND GV.MAGV IN (
+    SELECT GD.MAGV 
+    FROM GIANGDAY GD 
+    WHERE GD.MAMH = 'CTRR' AND GD.MALOP = 'K12' 
+        AND GD.HOCKY = 1 AND GD.NAM = 2006
+);
+GO
+
+-- Cau 12: Học viên thi rớt CSDL lần 1 nhưng chưa thi lại
+SELECT HV.MAHV, HV.HO, HV.TEN
+FROM HOCVIEN HV
+JOIN KETQUATHI KQ ON HV.MAHV = KQ.MAHV
+WHERE KQ.MAMH = 'CSDL' 
+    AND KQ.LANTHI = 1 
+    AND KQ.KQUA = 'Khong Dat'
+    AND HV.MAHV NOT IN (
+        SELECT MAHV 
+        FROM KETQUATHI 
+        WHERE MAMH = 'CSDL' AND LANTHI > 1
+    );
+GO
+
+-- Cau 13: Giáo viên không được phân công dạy
+SELECT GV.MAGV, GV.HOTEN
+FROM GIAOVIEN GV
+WHERE GV.MAGV NOT IN (
+    SELECT DISTINCT GD.MAGV 
+    FROM GIANGDAY GD
+);
+GO
+
+-- Cau 14: Giáo viên không dạy môn nào của khoa mình
+SELECT GV.MAGV, GV.HOTEN
+FROM GIAOVIEN GV
+WHERE NOT EXISTS (
+    SELECT * 
+    FROM GIANGDAY GD
+    JOIN MONHOC MH ON GD.MAMH = MH.MAMH
+    WHERE GD.MAGV = GV.MAGV 
+        AND MH.MAKHOA = GV.MAKHOA
+);
+GO
+
+-- Cau 15: Học viên lớp K11 thi môn bất kỳ quá 3 lần vẫn rớt hoặc thi lần 2 môn CTRR được 5 điểm
+SELECT DISTINCT HV.HO, HV.TEN
+FROM HOCVIEN HV
+JOIN KETQUATHI KQ ON HV.MAHV = KQ.MAHV
+WHERE HV.MALOP = 'K11' 
+    AND (
+        (KQ.LANTHI = 3 AND KQ.KQUA = 'Khong Dat') 
+        OR 
+        (KQ.MAMH = 'CTRR' AND KQ.LANTHI = 2 AND KQ.DIEM = 5)
+    );
+GO
+
+-- Cau 16: Giáo viên dạy môn CTRR cho ít nhất 2 lớp trong cùng học kỳ
+SELECT GV.HOTEN, GD.HOCKY, GD.NAM
+FROM GIAOVIEN GV
+JOIN GIANGDAY GD ON GV.MAGV = GD.MAGV
+WHERE GD.MAMH = 'CTRR'
+GROUP BY GV.MAGV, GV.HOTEN, GD.HOCKY, GD.NAM
+HAVING COUNT(DISTINCT GD.MALOP) >= 2;
+GO
+
+-- Cau 17: Danh sách điểm thi CSDL lần sau cùng
+SELECT HV.MAHV, HV.HO, HV.TEN, KQ.DIEM
+FROM HOCVIEN HV
+JOIN KETQUATHI KQ ON HV.MAHV = KQ.MAHV
+WHERE KQ.MAMH = 'CSDL'
+    AND KQ.LANTHI = (
+        SELECT MAX(LANTHI) 
+        FROM KETQUATHI 
+        WHERE MAHV = HV.MAHV AND MAMH = 'CSDL'
+    );
+GO
+
+-- Cau 18: Danh sách điểm thi cao nhất môn CSDL
+SELECT HV.MAHV, HV.HO, HV.TEN, MAX(KQ.DIEM) AS DIEM_CAO_NHAT
+FROM HOCVIEN HV
+JOIN KETQUATHI KQ ON HV.MAHV = KQ.MAHV
+JOIN MONHOC MH ON KQ.MAMH = MH.MAMH
+WHERE MH.TENMH = N'Cơ sở dữ liệu'
+GROUP BY HV.MAHV, HV.HO, HV.TEN;
+GO
