@@ -22,5 +22,3 @@ Sân đấu thiên hướng late → dễ hoàn thành nhiệm vụ 500 vàng
 Lộ trình lên cấp và lõi công nghệ
 
 Nhận lõi hỗ trợ roll, làm tiền, tăng tốc đánh cho tướng, tăng máu cho tướng.
-giữ chuỗi for no reason
-cái chuỗi xàm xàm ấy haha lol
