@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=30&pause=1000&color=39F75C&center=true&vCenter=true&width=600&lines=Hi+there!+I'm+Grant+👋;UIT+Student+From+Vietnam+🇻🇳;Fullstack+Developer+In+Training+🚀;C%2B%2B+|+C%23+|+React+|+Python" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=30&pause=1000&color=39F75C&center=true&vCenter=true&width=800&lines=Hi+there!+I'm+Grant+👋;UIT+Student+From+Vietnam+🇻🇳;Fullstack+Developer+In+Training+🚀;C%2B%2B+|+C%23+|+React+|+Python" alt="Typing SVG" />
   </a>
 </div>
 
@@ -33,12 +33,13 @@
 <br/>
 
 <div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=Grant-Tung&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117" width="48%" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Grant-Tung&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117&langs_count=6" width="48%" />
+  <img src="https://github-readme-stats.vercel.app/api?username=Grant-Tung&show_icons=true&theme=tokyonight&hide_border=true" width="48%" />
+  
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Grant-Tung&layout=compact&theme=tokyonight&hide_border=true" width="48%" />
 </div>
 
 <div align="center">
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Grant-Tung&theme=tokyonight&hide_border=true&bg_color=0D1117" width="97%" />
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Grant-Tung&theme=tokyonight&hide_border=true" width="97%" />
 </div>
 
 ---
